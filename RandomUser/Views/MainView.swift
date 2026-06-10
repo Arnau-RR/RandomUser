@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct MainView: View {
     @StateObject private var viewModel = MainViewModel()
+    @Environment(\.modelContext) private var modelContext
     
     var body: some View {
         ZStack {
@@ -18,7 +20,11 @@ struct MainView: View {
                 Spacer()
             }
         }
+        .onAppear() {
+            viewModel.configure(modelContext: modelContext)
+        }
         .task {
+            await viewModel.checkUsersStored()
             await viewModel.fetchUsers()
         }
     }
