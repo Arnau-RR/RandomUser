@@ -12,50 +12,53 @@ struct MainView: View {
     @StateObject private var viewModel = MainViewModel()
     @Environment(\.modelContext) private var modelContext
     @FocusState private var isSearching: Bool
-
     
     var body: some View {
-        ZStack(alignment: .top) {
-            Color.black.edgesIgnoringSafeArea(.all)
-            
-            LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.8), Color.clear]), startPoint: .top, endPoint: .bottom)
-                .frame(height: 200)
-                .edgesIgnoringSafeArea(.all)
-            
-            
-            VStack {
-                titleAndDeleteButton
-                searchBar
-                userList
-            }
-            .overlay {
-                ZStack {
-                    VStack {
-                        Spacer()
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color.clear,
-                                Color.black
-                            ]),
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                        .edgesIgnoringSafeArea(.all)
-                        .frame(height: 50)
-                        .overlay {
-                            addMoreRandomUsers
-                                .offset(y: 8)
-                                .opacity(viewModel.userWantsDeleteUsers ? 0 : 1)
-                            
-                            deleteButton
-                                .offset(y: 8)
-                                .opacity(viewModel.userWantsDeleteUsers ? 1 : 0)
+        NavigationStack {
+            ZStack(alignment: .top) {
+                Color.black.edgesIgnoringSafeArea(.all)
+                
+                LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.8), Color.clear]), startPoint: .top, endPoint: .bottom)
+                    .frame(height: 200)
+                    .edgesIgnoringSafeArea(.all)
+                
+                
+                VStack {
+                    titleAndDeleteButton
+                    userList
+                }
+                .overlay {
+                    ZStack {
+                        VStack {
+                            Spacer()
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.clear,
+                                    Color.black
+                                ]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                            .edgesIgnoringSafeArea(.all)
+                            .frame(height: 50)
+                            .overlay {
+//                                addMoreRandomUsers
+//                                    .offset(y: 8)
+//                                    .opacity(viewModel.userWantsDeleteUsers ? 0 : 1)
+                                
+                                deleteButton
+                                    .opacity(viewModel.userWantsDeleteUsers ? 1 : 0)
+                            }
                         }
                     }
                 }
             }
+            .navigationDestination(for: UserEntity.self) { user in
+                ProfileView(user: user)
+            }
+            .toolbar(.hidden, for: .navigationBar)
         }
-        .searchable(text: $viewModel.searchText) // Placement doesn't do anything here
+        .searchable(text: $viewModel.searchText)
         .liquidGlassLoading(isPresented: $viewModel.isLoading, state: .loading(message: String(localized: "fetching_users")))
         .popupAlert(
             isPresented: $viewModel.userConfirmsToDeleteTherUsers,
@@ -110,6 +113,15 @@ extension MainView {
             Spacer()
             
             GlassButtonComponent(padding: 10) {
+                viewModel.userWantsMoreUsers.toggle()
+            } content: {
+                Image(systemName: "arrow.down" )
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.85))
+                    .frame(height: 20)
+            }
+            
+            GlassButtonComponent(padding: 10) {
                 viewModel.userWantsDeleteUsers.toggle()
             } content: {
                 Image(systemName: viewModel.userWantsDeleteUsers ? "xmark" : "trash" )
@@ -122,85 +134,27 @@ extension MainView {
         .padding(.vertical, 16)
     }
     
-    private var searchBar: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(.white.opacity(0.28))
-
-            ZStack(alignment: .leading) {
-                if viewModel.searchText.isEmpty {
-                    Text(String(localized: "search_users"))
-                        .foregroundStyle(.white.opacity(0.6))
-                        .font(.system(size: 15, weight: .regular))
-
-                }
-
-                TextField("", text: $viewModel.searchText)
-                    .foregroundStyle(.white)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-            }
-
-            if !viewModel.searchText.isEmpty {
-                Button {
-                    viewModel.searchText = ""
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.white.opacity(0.18))
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(.horizontal, 14)
-        .frame(height: 48)
-        .background(.ultraThinMaterial)
-        .clipShape(Capsule())
-        .overlay {
-            Capsule()
-                .strokeBorder(
-                    Color.white.opacity(0.45),
-                    lineWidth: 1
-                )
-        }
-        .shadow(
-            color: .black.opacity(0.15),
-            radius: 12,
-            y: 4
-        )
-        .padding(.horizontal)
-    }
-    
-    
     private var userList: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 10) {
                 if !viewModel.usersSavedInDB.isEmpty {
                     ForEach(viewModel.filteredUsers) { result in
-                        UserListCell(
-                            userEntity: result,
-                            showCheckBoxButton: viewModel.userWantsDeleteUsers,
-                            onTap: { userSelected in
-                            },
-                            onCheckBoxTapped: { userSelected in
-                                viewModel.userCellCheckBoxPressed(userSelected)
-                            }
-                        )
+                        NavigationLink(value: result) {
+                            
+                            UserListCell(
+                                userEntity: result,
+                                showCheckBoxButton: viewModel.userWantsDeleteUsers,
+//                                onTap: { userSelected in
+//                                },
+                                onCheckBoxTapped: { userSelected in
+                                    viewModel.userCellCheckBoxPressed(userSelected)
+                                }
+                            )
+                        }
                     }
-//                    ForEach(viewModel.usersSavedInDB) { result in
-//                        UserListCell(
-//                            userEntity: result,
-//                            showCheckBoxButton: viewModel.userWantsDeleteUsers,
-//                            onTap: { userSelected in
-//                                //viewModel.userCellPressed(uuid: uuid, action: .tap)
-//                            },
-//                            onCheckBoxTapped: { userSelected in
-//                                viewModel.userCellCheckBoxPressed(userSelected)
-//                            }
-//                        )
-//                    }
-                    
                 }
             }
+            
         }
         .padding()
         .ignoresSafeArea()
@@ -233,26 +187,40 @@ extension MainView {
         .padding(.vertical, 16)
     }
     
-    var addMoreRandomUsers: some View {
-        
-        HStack {
-            GlassButtonComponent(padding: 10) {
-                viewModel.userWantsMoreUsers = true
-            } content: {
-                HStack {
-                    Image(systemName: "arrow.down" )
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(.blue.opacity(0.85))
-                        .frame(height: 20)
-                    
-                    Text(String(localized: "add_more_users"))
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(.blue.opacity(0.85))
-                }
-            }
+//    var addMoreRandomUsers: some View {
+//        
+//        HStack {
+//            GlassButtonComponent(padding: 10) {
+//                viewModel.userWantsMoreUsers = true
+//            } content: {
+//                HStack {
+//                    Image(systemName: "arrow.down" )
+//                        .font(.system(size: 15, weight: .semibold))
+//                        .foregroundStyle(.blue.opacity(0.85))
+//                        .frame(height: 20)
+//                    
+//                    Text(String(localized: "add_more_users"))
+//                        .font(.system(size: 15, weight: .semibold))
+//                        .foregroundStyle(.blue.opacity(0.85))
+//                }
+//            }
+//        }
+//        .padding(.horizontal, 20)
+//        .padding(.vertical, 16)
+//    }
+}
+
+extension View {
+    @ViewBuilder
+    func searchableIf(
+        _ enabled: Bool,
+        text: Binding<String>
+    ) -> some View {
+        if enabled {
+            self.searchable(text: text)
+        } else {
+            self
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 16)
     }
 }
 

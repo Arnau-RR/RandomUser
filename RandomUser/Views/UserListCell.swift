@@ -14,7 +14,7 @@ struct UserListCell: View {
     let userEntity: UserEntity
     let showCheckBoxButton: Bool
     
-    let onTap: ((UserEntity) -> Void)?
+    //let onTap: ((UserEntity) -> Void)?
     let onCheckBoxTapped: ((UserEntity) -> Void)?
     
     @State private var isPressed = false
@@ -22,20 +22,20 @@ struct UserListCell: View {
     init(
         userEntity: UserEntity,
         showCheckBoxButton: Bool,
-        onTap: ((UserEntity) -> Void)? = nil,
+        //onTap: ((UserEntity) -> Void)? = nil,
         onCheckBoxTapped: ((UserEntity) -> Void)? = nil,
     ) {
         self.userEntity = userEntity
         self.showCheckBoxButton = showCheckBoxButton
-        self.onTap = onTap
+        //self.onTap = onTap
         self.onCheckBoxTapped = onCheckBoxTapped
     }
     
     var body: some View {
         
-        Button {
-            onTap?(userEntity)
-        } label: {
+//        Button {
+//            onTap?(userEntity)
+//        } label: {
             GlassCardComponent {
                 HStack (spacing: 16){
                     if showCheckBoxButton {
@@ -62,9 +62,9 @@ struct UserListCell: View {
                 .animation(.spring(response: 0.22, dampingFraction: 0.8), value: showCheckBoxButton)
             }
         }
-        .buttonStyle(PressableButtonStyle())
-        
-    }
+//        .buttonStyle(PressableButtonStyle())
+//        
+//    }
 }
 
 extension UserListCell {
@@ -240,13 +240,13 @@ struct PressableButtonStyle: ButtonStyle {
             
             UserListCell(
                 userEntity: user1,
-                showCheckBoxButton: false, onCheckBoxTapped:  {_ in 
+                showCheckBoxButton: false, onCheckBoxTapped:  {_ in
                     print("tapped")
                 })
             
             UserListCell(
                 userEntity: user2,
-                showCheckBoxButton: true, onCheckBoxTapped:  {_ in 
+                showCheckBoxButton: true, onCheckBoxTapped:  {_ in
                     print("tapped")
                 })
         }

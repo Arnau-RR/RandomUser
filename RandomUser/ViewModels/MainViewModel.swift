@@ -27,7 +27,8 @@ final class MainViewModel: ObservableObject {
     @Published var userWantsMoreUsers: Bool = false
     @Published var userWantsToAddThisNumberOfUsers: String = "20"
     
-    // Search Text
+    // Search Users
+    @Published var userWantsSearchUsers: Bool = false
     @Published var searchText = ""
     
     // Error
