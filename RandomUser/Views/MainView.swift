@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct MainView: View {
+    @StateObject private var viewModel = MainViewModel()
     
     var body: some View {
         ZStack {
@@ -16,6 +17,9 @@ struct MainView: View {
                 Text("Random Users")
                 Spacer()
             }
+        }
+        .task {
+            await viewModel.fetchUsers()
         }
     }
 }
