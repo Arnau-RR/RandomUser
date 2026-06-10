@@ -13,7 +13,7 @@ import SwiftData
 final class MainViewModel: ObservableObject {
     
     // MARK: - Published Properties
-    
+
     @Published private(set) var users: [User] = []
     @Published var usersSavedInDB: [UserEntity] = []
     @Published var isLoading: Bool = false
@@ -23,11 +23,14 @@ final class MainViewModel: ObservableObject {
     @Published var selectedDeletedUsers: [UserEntity] = []
     @Published var userConfirmsToDeleteTherUsers: Bool = false
     
-    //Add Users
+    // Add Users
     @Published var userWantsMoreUsers: Bool = false
     @Published var userWantsToAddThisNumberOfUsers: String = "20"
-
     
+    // Search Text
+    @Published var searchText = ""
+    
+    // Error
     @Published private(set) var error: Error? = nil
     
     // MARK: - Dependencies
@@ -123,6 +126,18 @@ final class MainViewModel: ObservableObject {
             try context.save()
         } catch {
             print(error)
+        }
+    }
+    
+    var filteredUsers: [UserEntity] {
+        guard !searchText.isEmpty else {
+            return usersSavedInDB
+        }
+
+        return usersSavedInDB.filter { user in
+            user.firstName.localizedCaseInsensitiveContains(searchText) ||
+            user.lastName.localizedCaseInsensitiveContains(searchText) ||
+            user.email.localizedCaseInsensitiveContains(searchText)
         }
     }
     

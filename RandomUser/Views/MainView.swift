@@ -11,6 +11,8 @@ import SwiftData
 struct MainView: View {
     @StateObject private var viewModel = MainViewModel()
     @Environment(\.modelContext) private var modelContext
+    @FocusState private var isSearching: Bool
+
     
     var body: some View {
         ZStack(alignment: .top) {
@@ -23,6 +25,7 @@ struct MainView: View {
             
             VStack {
                 titleAndDeleteButton
+                searchBar
                 userList
             }
             .overlay {
@@ -52,6 +55,7 @@ struct MainView: View {
                 }
             }
         }
+        .searchable(text: $viewModel.searchText) // Placement doesn't do anything here
         .liquidGlassLoading(isPresented: $viewModel.isLoading, state: .loading(message: String(localized: "fetching_users")))
         .popupAlert(
             isPresented: $viewModel.userConfirmsToDeleteTherUsers,
@@ -118,23 +122,82 @@ extension MainView {
         .padding(.vertical, 16)
     }
     
+    private var searchBar: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.white.opacity(0.28))
+
+            ZStack(alignment: .leading) {
+                if viewModel.searchText.isEmpty {
+                    Text(String(localized: "search_users"))
+                        .foregroundStyle(.white.opacity(0.6))
+                        .font(.system(size: 15, weight: .regular))
+
+                }
+
+                TextField("", text: $viewModel.searchText)
+                    .foregroundStyle(.white)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+            }
+
+            if !viewModel.searchText.isEmpty {
+                Button {
+                    viewModel.searchText = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.white.opacity(0.18))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 14)
+        .frame(height: 48)
+        .background(.ultraThinMaterial)
+        .clipShape(Capsule())
+        .overlay {
+            Capsule()
+                .strokeBorder(
+                    Color.white.opacity(0.45),
+                    lineWidth: 1
+                )
+        }
+        .shadow(
+            color: .black.opacity(0.15),
+            radius: 12,
+            y: 4
+        )
+        .padding(.horizontal)
+    }
+    
     
     private var userList: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 10) {
                 if !viewModel.usersSavedInDB.isEmpty {
-                    ForEach(viewModel.usersSavedInDB) { result in
+                    ForEach(viewModel.filteredUsers) { result in
                         UserListCell(
                             userEntity: result,
                             showCheckBoxButton: viewModel.userWantsDeleteUsers,
                             onTap: { userSelected in
-                                //viewModel.userCellPressed(uuid: uuid, action: .tap)
                             },
                             onCheckBoxTapped: { userSelected in
                                 viewModel.userCellCheckBoxPressed(userSelected)
                             }
                         )
                     }
+//                    ForEach(viewModel.usersSavedInDB) { result in
+//                        UserListCell(
+//                            userEntity: result,
+//                            showCheckBoxButton: viewModel.userWantsDeleteUsers,
+//                            onTap: { userSelected in
+//                                //viewModel.userCellPressed(uuid: uuid, action: .tap)
+//                            },
+//                            onCheckBoxTapped: { userSelected in
+//                                viewModel.userCellCheckBoxPressed(userSelected)
+//                            }
+//                        )
+//                    }
                     
                 }
             }
