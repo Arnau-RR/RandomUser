@@ -16,7 +16,7 @@ final class MainViewModel: ObservableObject {
     
     @Published private(set) var users: [User] = []
     @Published var usersSavedInDB: [UserEntity] = []
-    @Published private(set) var isLoading: Bool = false
+    @Published var isLoading: Bool = false
     @Published private(set) var error: Error? = nil
     
     // MARK: - Dependencies
@@ -36,10 +36,6 @@ final class MainViewModel: ObservableObject {
     
     func getUsersArray() -> [User] {
         return users
-    }
-    
-    func getIsLoading() -> Bool {
-        return isLoading
     }
     
     // MARK: - Other Functions

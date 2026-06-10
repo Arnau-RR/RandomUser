@@ -13,13 +13,20 @@ struct MainView: View {
     @Environment(\.modelContext) private var modelContext
     
     var body: some View {
-        ZStack {
+        ZStack(alignment: .top) {
+            Color.black.edgesIgnoringSafeArea(.all)
+            
+            LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.8), Color.clear]), startPoint: .top, endPoint: .bottom)
+                .frame(height: 200)
+                .edgesIgnoringSafeArea(.all)
+            
             VStack {
                 Spacer()
-                Text("Random Users")
-                Spacer()
+                userList
             }
         }
+        .liquidGlassLoading(isPresented: $viewModel.isLoading, state: .loading(message: String(localized: "fetching_users")))
+        
         .onAppear() {
             viewModel.configure(modelContext: modelContext)
         }
@@ -32,8 +39,24 @@ struct MainView: View {
 
 extension MainView {
     
+    private var userList: some View {
+        ScrollView(showsIndicators: false) {
+            LazyVStack(spacing: 10) {
+                if !viewModel.usersSavedInDB.isEmpty {
+                    ForEach(viewModel.usersSavedInDB) { result in
+                        UserListCell(userName: result.firstName, userSurname: result.lastName, userEmail: result.email, userPicture: result.pictureURL, userPhone: result.phone)
+                    }
+                    
+                }
+            }
+        }
+        .padding()
+        .ignoresSafeArea()
+    }
 }
 
 #Preview {
     MainView()
 }
+
+
