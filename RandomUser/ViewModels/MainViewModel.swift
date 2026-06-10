@@ -61,6 +61,7 @@ final class MainViewModel: ObservableObject {
                 users = try await service.fetchRandomUsers(resultsNumber: 20).results
                 removeDuplicateUsers()
                 saveUsersToDb()
+                await checkUsersStored()
             } catch {
                 self.error = error
             }

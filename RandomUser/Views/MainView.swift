@@ -21,16 +21,14 @@ struct MainView: View {
                 .edgesIgnoringSafeArea(.all)
             
             VStack {
-                Spacer()
+                titleAndDeleteButton
                 userList
             }
         }
         .liquidGlassLoading(isPresented: $viewModel.isLoading, state: .loading(message: String(localized: "fetching_users")))
         
-        .onAppear() {
-            viewModel.configure(modelContext: modelContext)
-        }
         .task {
+            viewModel.configure(modelContext: modelContext)
             await viewModel.checkUsersStored()
             await viewModel.fetchUsers()
         }
@@ -38,6 +36,34 @@ struct MainView: View {
 }
 
 extension MainView {
+    
+    var titleAndDeleteButton: some View {
+        HStack(alignment: .center) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(String(localized: "find_your"))
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.5))
+                    .kerning(2)
+                
+                Text(String(localized: "random_user"))
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundStyle(.white)
+            }
+            
+            Spacer()
+            
+            GlassButtonComponent(padding: 10) {
+                // viewModel.deleteUser()
+            } content: {
+                Image(systemName: "trash")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.red.opacity(0.85))
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+    }
+    
     
     private var userList: some View {
         ScrollView(showsIndicators: false) {
