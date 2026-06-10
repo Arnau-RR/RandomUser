@@ -9,46 +9,57 @@ import SwiftUI
 
 struct UserListCell: View {
     
-    let userName: String
-    let userSurname: String
-    let userEmail: String
-    let userPicture: String
-    let userPhone: String
+    @State var isChecked: Bool = false
     
-    let onTap: (() -> Void)?
+    let userEntity: UserEntity
+    let showCheckBoxButton: Bool
+    
+    let onTap: ((UserEntity) -> Void)?
+    let onCheckBoxTapped: ((UserEntity) -> Void)?
     
     @State private var isPressed = false
     
     init(
-        userName: String,
-        userSurname: String,
-        userEmail: String,
-        userPicture: String,
-        userPhone: String,
-        onTap: (() -> Void)? = nil
+        userEntity: UserEntity,
+        showCheckBoxButton: Bool,
+        onTap: ((UserEntity) -> Void)? = nil,
+        onCheckBoxTapped: ((UserEntity) -> Void)? = nil,
     ) {
-        self.userName = userName
-        self.userSurname = userSurname
-        self.userEmail = userEmail
-        self.userPicture = userPicture
-        self.userPhone = userPhone
+        self.userEntity = userEntity
+        self.showCheckBoxButton = showCheckBoxButton
         self.onTap = onTap
+        self.onCheckBoxTapped = onCheckBoxTapped
     }
     
     var body: some View {
         
         Button {
-            onTap?()
+            onTap?(userEntity)
         } label: {
             GlassCardComponent {
                 HStack (spacing: 16){
+                    if showCheckBoxButton {
+                        checkBoxButton
+                            .simultaneousGesture(
+                                TapGesture()
+                                    .onEnded {
+                                        onCheckBoxTapped?(userEntity)
+                                    }
+                            )
+                            .transition(
+                                .asymmetric(
+                                    insertion: .move(edge: .leading).combined(with: .opacity),
+                                    removal: .move(edge: .leading).combined(with: .opacity)
+                                )
+                            )
+                    }
                     userImage
                     userInfo
                     Spacer()
                     chevron
                 }
                 .padding(.vertical, 4)
-                
+                .animation(.spring(response: 0.22, dampingFraction: 0.8), value: showCheckBoxButton)
             }
         }
         .buttonStyle(PressableButtonStyle())
@@ -57,6 +68,10 @@ struct UserListCell: View {
 }
 
 extension UserListCell {
+    
+    private var checkBoxButton: some View {
+        CheckBoxView(checked: $isChecked)
+    }
     
     private var userImage: some View {
         ZStack {
@@ -73,7 +88,7 @@ extension UserListCell {
                 .frame(width: 68, height: 68)
             
             AsyncImage(
-                url: URL(string: userPicture),
+                url: URL(string: userEntity.pictureURL),
                 transaction: Transaction(animation: .easeInOut(duration: 0.3))
             ) { phase in
                 switch phase {
@@ -122,10 +137,10 @@ extension UserListCell {
         VStack(alignment: .leading, spacing: 6) {
             // Full name
             HStack(alignment: .firstTextBaseline, spacing: 5) {
-                Text(userName)
+                Text(userEntity.firstName)
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.white)
-                Text(userSurname)
+                Text(userEntity.lastName)
                     .font(.system(size: 18, weight: .light))
                     .foregroundColor(.white.opacity(0.75))
             }
@@ -144,8 +159,8 @@ extension UserListCell {
             
             // Contact info
             VStack(alignment: .leading, spacing: 3) {
-                metadataRow(icon: "phone.fill", text: userPhone)
-                metadataRow(icon: "envelope.fill", text: userEmail)
+                metadataRow(icon: "phone.fill", text: userEntity.phone)
+                metadataRow(icon: "envelope.fill", text: userEntity.email)
             }
         }
     }
@@ -170,8 +185,8 @@ extension UserListCell {
     }
     
     private var initials: String {
-        let first = userName.first.map(String.init) ?? ""
-        let last = userSurname.first.map(String.init) ?? ""
+        let first = userEntity.firstName.first.map(String.init) ?? ""
+        let last = userEntity.lastName.first.map(String.init) ?? ""
         return first + last
     }
 }
@@ -190,71 +205,51 @@ struct PressableButtonStyle: ButtonStyle {
 // MARK: - Preview
 
 #Preview {
+    
+    let user1 = UserEntity(
+        uuid: UUID().uuidString,
+        firstName: "Pablo",
+        lastName: "García",
+        email: "pablo@gmail.com",
+        phone: "+34 667 421 445",
+        gender: "male",
+        city: "Barcelona",
+        state: "Catalonia",
+        registeredDate: "2026-06-10",
+        pictureURL: "https://randomuser.me/api/portraits/men/75.jpg"
+    )
+    
+    let user2 = UserEntity(
+        uuid: UUID().uuidString,
+        firstName: "María",
+        lastName: "López",
+        email: "maria.lopez@icloud.com",
+        phone: "+34 612 885 331",
+        gender: "female",
+        city: "Madrid",
+        state: "Madrid",
+        registeredDate: "2026-06-10",
+        pictureURL: "https://randomuser.me/api/portraits/women/44.jpg"
+    )
+    
     ZStack {
         Color(red: 0.08, green: 0.08, blue: 0.12)
             .ignoresSafeArea()
         
         VStack(spacing: 12) {
-            UserListCell(
-                userName: "Pablo",
-                userSurname: "García",
-                userEmail: "pablo@gmail.com",
-                userPicture: "https://randomuser.me/api/portraits/men/75.jpg",
-                userPhone: "+34 667 421 445"
-            ) { print("tapped") }
             
             UserListCell(
-                userName: "María",
-                userSurname: "López",
-                userEmail: "maria.lopez@icloud.com",
-                userPicture: "https://randomuser.me/api/portraits/women/44.jpg",
-                userPhone: "+34 612 885 331"
-            ) { print("tapped") }
+                userEntity: user1,
+                showCheckBoxButton: false, onCheckBoxTapped:  {_ in 
+                    print("tapped")
+                })
+            
+            UserListCell(
+                userEntity: user2,
+                showCheckBoxButton: true, onCheckBoxTapped:  {_ in 
+                    print("tapped")
+                })
         }
         .padding()
     }
 }
-//extension UserListCell {
-//
-//    private var userImage: some View {
-//        AsyncImage(
-//            url: URL(string: userPicture),
-//            transaction: Transaction(animation: .default),
-//            content: { phase in
-//                if let image = phase.image {
-//                    image
-//                        .resizable()
-//                        .scaledToFit()
-//                        .frame(width: 100, height: 100)
-//                        .clipShape(Circle())
-//                } else {
-//                    ProgressView()
-//                }
-//            }
-//        )
-//    }
-//
-//    private var nameAndSurname: some View {
-//        VStack (spacing: 7){
-//            Text(userName)
-//                .font(.system(size: 27, weight: .regular))
-//            Text(userSurname)
-//                .font(.system(size: 15, weight: .light))
-//        }
-//    }
-//
-//    private var phoneAndEmail: some View {
-//        VStack (spacing: 7){
-//            Text(userPhone)
-//                .font(.system(size: 27, weight: .regular))
-//            Text(userEmail)
-//                .font(.system(size: 15, weight: .light))
-//        }
-//    }
-//}
-//
-//#Preview {
-//    UserListCell(userName: "Pablo", userSurname: "Pablito", userEmail: "pablo@gmail.com", userPicture: "https://randomuser.me/api/portraits/men/75.jpg", userPhone: "+34 667 421 445") {
-//        print("AU")
-//    }
-//}

@@ -1,3 +1,10 @@
+//
+//  LoadingState.swift
+//  RandomUser
+//
+//  Created by Arnau on 10/06/2026.
+//
+
 import SwiftUI
 
 // MARK: - Loading State

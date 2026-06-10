@@ -17,6 +17,12 @@ final class MainViewModel: ObservableObject {
     @Published private(set) var users: [User] = []
     @Published var usersSavedInDB: [UserEntity] = []
     @Published var isLoading: Bool = false
+    
+    // Delete Users
+    @Published var userWantsDeleteUsers: Bool = false
+    @Published var selectedDeletedUsers: [UserEntity] = []
+    @Published var userConfirmsToDeleteTherUsers: Bool = false
+    
     @Published private(set) var error: Error? = nil
     
     // MARK: - Dependencies
@@ -40,13 +46,29 @@ final class MainViewModel: ObservableObject {
     
     // MARK: - Other Functions
     
+//    func checkUsersStored() async {
+//        guard let modelContext else { return }
+//
+//        do {
+//            usersSavedInDB = try modelContext.fetch(
+//                FetchDescriptor<UserEntity>()
+//            )
+//        } catch {
+//            print(error)
+//        }
+//    }
     func checkUsersStored() async {
         guard let modelContext else { return }
 
         do {
-            usersSavedInDB = try modelContext.fetch(
-                FetchDescriptor<UserEntity>()
+            let descriptor = FetchDescriptor<UserEntity>(
+                predicate: #Predicate<UserEntity> {
+                    !$0.isDeletedByUser
+                }
             )
+
+            usersSavedInDB = try modelContext.fetch(descriptor)
+
         } catch {
             print(error)
         }
@@ -105,6 +127,36 @@ final class MainViewModel: ObservableObject {
         
         do {
             try context.save()
+        } catch {
+            print(error)
+        }
+    }
+    
+    func userCellCheckBoxPressed(_ userSelected: UserEntity) {
+        if let index = selectedDeletedUsers.firstIndex(where: { $0.uuid == userSelected.uuid }) {
+            selectedDeletedUsers.remove(at: index)
+        } else {
+            selectedDeletedUsers.append(userSelected)
+        }
+    }
+    
+    func checkUsersAsDeleted() {
+
+        guard let modelContext else { return }
+
+        for user in selectedDeletedUsers {
+            user.isDeletedByUser = true
+        }
+
+        do {
+            try modelContext.save()
+
+            selectedDeletedUsers.removeAll()
+
+            Task {
+                await checkUsersStored()
+            }
+
         } catch {
             print(error)
         }

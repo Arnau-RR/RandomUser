@@ -20,9 +20,33 @@ struct MainView: View {
                 .frame(height: 200)
                 .edgesIgnoringSafeArea(.all)
             
+            
             VStack {
                 titleAndDeleteButton
                 userList
+            }
+            .overlay {
+                ZStack {
+                    VStack {
+                        Spacer()
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color.clear,
+                                Color.black
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .edgesIgnoringSafeArea(.all)
+                        .frame(height: 50)
+                        .overlay {
+                            deleteButton
+                                .offset(y: 8)
+                        }
+                    }
+                }
+                .opacity(viewModel.userWantsDeleteUsers ? 1 : 0)
+                
             }
         }
         .liquidGlassLoading(isPresented: $viewModel.isLoading, state: .loading(message: String(localized: "fetching_users")))
@@ -32,6 +56,18 @@ struct MainView: View {
             await viewModel.checkUsersStored()
             await viewModel.fetchUsers()
         }
+        
+        .popupAlert(
+            isPresented: $viewModel.userConfirmsToDeleteTherUsers,
+            title: String(localized: "title_delete_users"),
+            message: String(localized: "subtitle_delete_secure"),
+            icon: "trash.fill",
+            iconColor: .red,
+            buttons: [
+                .destructive(String(localized: "delete")) {viewModel.checkUsersAsDeleted()},
+                .cancel()
+            ]
+        )
     }
 }
 
@@ -53,11 +89,12 @@ extension MainView {
             Spacer()
             
             GlassButtonComponent(padding: 10) {
-                // viewModel.deleteUser()
+                viewModel.userWantsDeleteUsers.toggle()
             } content: {
-                Image(systemName: "trash")
+                Image(systemName: viewModel.userWantsDeleteUsers ? "xmark" : "trash" )
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(.red.opacity(0.85))
+                    .foregroundStyle(viewModel.userWantsDeleteUsers ? .white.opacity(0.85) : .red.opacity(0.85))
+                    .frame(height: 20)
             }
         }
         .padding(.horizontal, 20)
@@ -70,7 +107,16 @@ extension MainView {
             LazyVStack(spacing: 10) {
                 if !viewModel.usersSavedInDB.isEmpty {
                     ForEach(viewModel.usersSavedInDB) { result in
-                        UserListCell(userName: result.firstName, userSurname: result.lastName, userEmail: result.email, userPicture: result.pictureURL, userPhone: result.phone)
+                        UserListCell(
+                            userEntity: result,
+                            showCheckBoxButton: viewModel.userWantsDeleteUsers,
+                            onTap: { userSelected in
+                                //viewModel.userCellPressed(uuid: uuid, action: .tap)
+                            },
+                            onCheckBoxTapped: { userSelected in
+                                viewModel.userCellCheckBoxPressed(userSelected)
+                            }
+                        )
                     }
                     
                 }
@@ -78,6 +124,34 @@ extension MainView {
         }
         .padding()
         .ignoresSafeArea()
+    }
+    
+    var deleteButton: some View {
+        
+        HStack {
+            GlassButtonComponent(padding: 10) {
+                viewModel.userConfirmsToDeleteTherUsers = true
+                //viewModel.userWantsDeleteUsers.toggle()
+            } content: {
+                HStack {
+                    Text(
+                        viewModel.selectedDeletedUsers.isEmpty
+                        ? String(localized: "delete_user")
+                        : "\(String(localized: "delete_users")) \(viewModel.selectedDeletedUsers.count)"
+                    )                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.red.opacity(0.85))
+                    
+                    Image(systemName: "trash" )
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.red.opacity(0.85))
+                        .frame(height: 20)
+                }
+            }
+            .disabled(viewModel.selectedDeletedUsers.isEmpty)
+            
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
     }
 }
 
