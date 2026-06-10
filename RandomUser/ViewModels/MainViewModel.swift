@@ -23,6 +23,11 @@ final class MainViewModel: ObservableObject {
     @Published var selectedDeletedUsers: [UserEntity] = []
     @Published var userConfirmsToDeleteTherUsers: Bool = false
     
+    //Add Users
+    @Published var userWantsMoreUsers: Bool = false
+    @Published var userWantsToAddThisNumberOfUsers: String = "20"
+
+    
     @Published private(set) var error: Error? = nil
     
     // MARK: - Dependencies
@@ -46,17 +51,6 @@ final class MainViewModel: ObservableObject {
     
     // MARK: - Other Functions
     
-//    func checkUsersStored() async {
-//        guard let modelContext else { return }
-//
-//        do {
-//            usersSavedInDB = try modelContext.fetch(
-//                FetchDescriptor<UserEntity>()
-//            )
-//        } catch {
-//            print(error)
-//        }
-//    }
     func checkUsersStored() async {
         guard let modelContext else { return }
 
@@ -80,7 +74,7 @@ final class MainViewModel: ObservableObject {
             error = nil
             
             do {
-                users = try await service.fetchRandomUsers(resultsNumber: 20).results
+                users = try await service.fetchRandomUsers(resultsNumber: Int(userWantsToAddThisNumberOfUsers) ?? 0).results
                 removeDuplicateUsers()
                 saveUsersToDb()
                 await checkUsersStored()

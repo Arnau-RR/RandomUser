@@ -39,6 +39,8 @@ extension View {
         message: String? = nil,
         icon: String? = nil,
         iconColor: Color = .accentColor,
+        textFieldText: Binding<String>? = nil,
+        textFieldPlaceholder: String = "",
         buttons: [PopupButton]
     ) -> some View {
         modifier(PopupAlertModifier(
@@ -47,6 +49,8 @@ extension View {
             message: message,
             icon: icon,
             iconColor: iconColor,
+            textFieldText: textFieldText,
+            textFieldPlaceholder: textFieldPlaceholder,
             buttons: buttons
         ))
     }
@@ -59,6 +63,8 @@ private struct PopupAlertModifier: ViewModifier {
     let message: String?
     let icon: String?
     let iconColor: Color
+    let textFieldText: Binding<String>?
+    let textFieldPlaceholder: String
     let buttons: [PopupButton]
 
     func body(content: Content) -> some View {
@@ -68,6 +74,8 @@ private struct PopupAlertModifier: ViewModifier {
                     LiquidGlassAlertScreen(
                         title: title, message: message,
                         icon: icon, iconColor: iconColor,
+                        textFieldText: textFieldText,
+                        textFieldPlaceholder: textFieldPlaceholder,
                         buttons: buttons,
                         onDismiss: { isPresented = false }
                     )
@@ -79,6 +87,8 @@ private struct PopupAlertModifier: ViewModifier {
                     FallbackAlertScreen(
                         title: title, message: message,
                         icon: icon, iconColor: iconColor,
+                        textFieldText: textFieldText,
+                        textFieldPlaceholder: textFieldPlaceholder,
                         buttons: buttons,
                         onDismiss: { isPresented = false }
                     )
@@ -98,6 +108,8 @@ private struct LiquidGlassAlertScreen: View {
     let message: String?
     let icon: String?
     let iconColor: Color
+    let textFieldText: Binding<String>?
+    let textFieldPlaceholder: String
     let buttons: [PopupButton]
     let onDismiss: () -> Void
 
@@ -107,6 +119,8 @@ private struct LiquidGlassAlertScreen: View {
             LiquidGlassAlertCard(
                 title: title, message: message,
                 icon: icon, iconColor: iconColor,
+                textFieldText: textFieldText,
+                textFieldPlaceholder: textFieldPlaceholder,
                 buttons: buttons, onDismiss: onDismiss
             )
         }
@@ -119,6 +133,8 @@ private struct LiquidGlassAlertCard: View {
     let message: String?
     let icon: String?
     let iconColor: Color
+    let textFieldText: Binding<String>?
+    let textFieldPlaceholder: String
     let buttons: [PopupButton]
     let onDismiss: () -> Void
 
@@ -149,6 +165,11 @@ private struct LiquidGlassAlertCard: View {
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                             .fixedSize(horizontal: false, vertical: true)
+                    }
+                    
+                    if let textFieldText {
+                        TextField(textFieldPlaceholder, text: textFieldText)
+                            .textFieldStyle(.roundedBorder)
                     }
                 }
 
@@ -218,6 +239,8 @@ private struct FallbackAlertScreen: View {
     let message: String?
     let icon: String?
     let iconColor: Color
+    let textFieldText: Binding<String>?
+    let textFieldPlaceholder: String
     let buttons: [PopupButton]
     let onDismiss: () -> Void
 
@@ -226,6 +249,8 @@ private struct FallbackAlertScreen: View {
             FallbackAlertCard(
                 title: title, message: message,
                 icon: icon, iconColor: iconColor,
+                textFieldText: textFieldText,
+                textFieldPlaceholder: textFieldPlaceholder,
                 buttons: buttons, onDismiss: onDismiss
             )
         }
@@ -237,6 +262,8 @@ private struct FallbackAlertCard: View {
     let message: String?
     let icon: String?
     let iconColor: Color
+    let textFieldText: Binding<String>?
+    let textFieldPlaceholder: String
     let buttons: [PopupButton]
     let onDismiss: () -> Void
 
@@ -264,6 +291,11 @@ private struct FallbackAlertCard: View {
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
+                }
+                
+                if let textFieldText {
+                    TextField(textFieldPlaceholder, text: textFieldText)
+                        .textFieldStyle(.roundedBorder)
                 }
             }
 

@@ -40,23 +40,19 @@ struct MainView: View {
                         .edgesIgnoringSafeArea(.all)
                         .frame(height: 50)
                         .overlay {
+                            addMoreRandomUsers
+                                .offset(y: 8)
+                                .opacity(viewModel.userWantsDeleteUsers ? 0 : 1)
+                            
                             deleteButton
                                 .offset(y: 8)
+                                .opacity(viewModel.userWantsDeleteUsers ? 1 : 0)
                         }
                     }
                 }
-                .opacity(viewModel.userWantsDeleteUsers ? 1 : 0)
-                
             }
         }
         .liquidGlassLoading(isPresented: $viewModel.isLoading, state: .loading(message: String(localized: "fetching_users")))
-        
-        .task {
-            viewModel.configure(modelContext: modelContext)
-            await viewModel.checkUsersStored()
-            await viewModel.fetchUsers()
-        }
-        
         .popupAlert(
             isPresented: $viewModel.userConfirmsToDeleteTherUsers,
             title: String(localized: "title_delete_users"),
@@ -68,6 +64,27 @@ struct MainView: View {
                 .cancel()
             ]
         )
+        .popupAlert(
+            isPresented: $viewModel.userWantsMoreUsers,
+            title: String(localized: "add_more_users"),
+            message: String(localized: "how_many_users_want"),
+            icon: "person.3.fill",
+            textFieldText: $viewModel.userWantsToAddThisNumberOfUsers,
+            textFieldPlaceholder: String(localized: "number_users"),
+            buttons: [
+                .cancel(),
+                .primary(String(localized: "accept_button")) {
+                    Task {
+                        await viewModel.fetchUsers(userWantsMoreUsers: true)
+                    }
+                }
+            ]
+        )
+        .task {
+            viewModel.configure(modelContext: modelContext)
+            await viewModel.checkUsersStored()
+            await viewModel.fetchUsers()
+        }
     }
 }
 
@@ -131,7 +148,6 @@ extension MainView {
         HStack {
             GlassButtonComponent(padding: 10) {
                 viewModel.userConfirmsToDeleteTherUsers = true
-                //viewModel.userWantsDeleteUsers.toggle()
             } content: {
                 HStack {
                     Text(
@@ -149,6 +165,28 @@ extension MainView {
             }
             .disabled(viewModel.selectedDeletedUsers.isEmpty)
             
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+    }
+    
+    var addMoreRandomUsers: some View {
+        
+        HStack {
+            GlassButtonComponent(padding: 10) {
+                viewModel.userWantsMoreUsers = true
+            } content: {
+                HStack {
+                    Image(systemName: "arrow.down" )
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.blue.opacity(0.85))
+                        .frame(height: 20)
+                    
+                    Text(String(localized: "add_more_users"))
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.blue.opacity(0.85))
+                }
+            }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
