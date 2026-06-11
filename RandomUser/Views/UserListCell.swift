@@ -13,8 +13,6 @@ struct UserListCell: View {
     
     let userEntity: UserEntity
     let showCheckBoxButton: Bool
-    
-    //let onTap: ((UserEntity) -> Void)?
     let onCheckBoxTapped: ((UserEntity) -> Void)?
     
     @State private var isPressed = false
@@ -22,49 +20,40 @@ struct UserListCell: View {
     init(
         userEntity: UserEntity,
         showCheckBoxButton: Bool,
-        //onTap: ((UserEntity) -> Void)? = nil,
         onCheckBoxTapped: ((UserEntity) -> Void)? = nil,
     ) {
         self.userEntity = userEntity
         self.showCheckBoxButton = showCheckBoxButton
-        //self.onTap = onTap
         self.onCheckBoxTapped = onCheckBoxTapped
     }
     
     var body: some View {
-        
-//        Button {
-//            onTap?(userEntity)
-//        } label: {
-            GlassCardComponent {
-                HStack (spacing: 16){
-                    if showCheckBoxButton {
-                        checkBoxButton
-                            .simultaneousGesture(
-                                TapGesture()
-                                    .onEnded {
-                                        onCheckBoxTapped?(userEntity)
-                                    }
+        GlassCardComponent {
+            HStack (spacing: 16){
+                if showCheckBoxButton {
+                    checkBoxButton
+                        .simultaneousGesture(
+                            TapGesture()
+                                .onEnded {
+                                    onCheckBoxTapped?(userEntity)
+                                }
+                        )
+                        .transition(
+                            .asymmetric(
+                                insertion: .move(edge: .leading).combined(with: .opacity),
+                                removal: .move(edge: .leading).combined(with: .opacity)
                             )
-                            .transition(
-                                .asymmetric(
-                                    insertion: .move(edge: .leading).combined(with: .opacity),
-                                    removal: .move(edge: .leading).combined(with: .opacity)
-                                )
-                            )
-                    }
-                    userImage
-                    userInfo
-                    Spacer()
-                    chevron
+                        )
                 }
-                .padding(.vertical, 4)
-                .animation(.spring(response: 0.22, dampingFraction: 0.8), value: showCheckBoxButton)
+                userImage
+                userInfo
+                Spacer()
+                chevron
             }
+            .padding(.vertical, 4)
+            .animation(.spring(response: 0.22, dampingFraction: 0.8), value: showCheckBoxButton)
         }
-//        .buttonStyle(PressableButtonStyle())
-//        
-//    }
+    }
 }
 
 extension UserListCell {
@@ -74,45 +63,12 @@ extension UserListCell {
     }
     
     private var userImage: some View {
-        ZStack {
-            // Gradient ring
-            Circle()
-                .strokeBorder(
-                    LinearGradient(
-                        colors: [.purple, .blue.opacity(0.8)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 2.5
-                )
-                .frame(width: 68, height: 68)
-            
-            AsyncImage(
-                url: URL(string: userEntity.pictureURL),
-                transaction: Transaction(animation: .easeInOut(duration: 0.3))
-            ) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 62, height: 62)
-                        .clipShape(Circle())
-                        .transition(.opacity.combined(with: .scale(scale: 0.9)))
-                case .failure:
-                    initialsPlaceholder
-                default:
-                    ZStack {
-                        Circle()
-                            .fill(Color.white.opacity(0.08))
-                            .frame(width: 62, height: 62)
-                        ProgressView()
-                            .tint(.white.opacity(0.5))
-                            .scaleEffect(0.8)
-                    }
-                }
-            }
-        }
+        LoadAsyncImage(
+            imageURL: userEntity.pictureURL,
+            initials: initials,
+            circleSize: 68,
+            imageSize: 62
+        )
     }
     
     private var initialsPlaceholder: some View {
@@ -213,8 +169,12 @@ struct PressableButtonStyle: ButtonStyle {
         email: "pablo@gmail.com",
         phone: "+34 667 421 445",
         gender: "male",
+        streetNumber: 122,
+        streetName: "Calle Falsa",
         city: "Barcelona",
         state: "Catalonia",
+        latitude: "41.38879",
+        longitude: "2.15899",
         registeredDate: "2026-06-10",
         pictureURL: "https://randomuser.me/api/portraits/men/75.jpg"
     )
@@ -226,8 +186,12 @@ struct PressableButtonStyle: ButtonStyle {
         email: "maria.lopez@icloud.com",
         phone: "+34 612 885 331",
         gender: "female",
+        streetNumber: 122,
+        streetName: "Calle Falsa",
         city: "Madrid",
         state: "Madrid",
+        latitude: "41.38879",
+        longitude: "2.15899",
         registeredDate: "2026-06-10",
         pictureURL: "https://randomuser.me/api/portraits/women/44.jpg"
     )
