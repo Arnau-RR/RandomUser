@@ -112,13 +112,15 @@ extension MainView {
             
             Spacer()
             
-            GlassButtonComponent(padding: 10) {
-                viewModel.userWantsMoreUsers.toggle()
-            } content: {
-                Image(systemName: "arrow.down" )
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.85))
-                    .frame(height: 20)
+            if !viewModel.userWantsDeleteUsers {
+                GlassButtonComponent(padding: 10) {
+                    viewModel.userWantsMoreUsers.toggle()
+                } content: {
+                    Image(systemName: "arrow.down" )
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.85))
+                        .frame(height: 20)
+                }
             }
             
             GlassButtonComponent(padding: 10) {
