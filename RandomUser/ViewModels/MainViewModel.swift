@@ -183,4 +183,10 @@ final class MainViewModel: ObservableObject {
             print(error)
         }
     }
+    
+#if DEBUG
+func setUsersForTesting(_ users: [User]) {
+    self.users = users
+}
+#endif
 }
