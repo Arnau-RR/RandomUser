@@ -140,12 +140,9 @@ extension MainView {
                 if !viewModel.usersSavedInDB.isEmpty {
                     ForEach(viewModel.filteredUsers) { result in
                         NavigationLink(value: result) {
-                            
                             UserListCell(
                                 userEntity: result,
                                 showCheckBoxButton: viewModel.userWantsDeleteUsers,
-//                                onTap: { userSelected in
-//                                },
                                 onCheckBoxTapped: { userSelected in
                                     viewModel.userCellCheckBoxPressed(userSelected)
                                 }
@@ -154,7 +151,7 @@ extension MainView {
                     }
                 }
             }
-            
+            Spacer(minLength: 75)
         }
         .padding()
         .ignoresSafeArea()

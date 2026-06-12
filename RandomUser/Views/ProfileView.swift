@@ -32,6 +32,7 @@ struct ProfileView: View {
                     nameAndSurname
                     gender
                 }
+                
                 ScrollView(showsIndicators: false) {
                     
                     phoneAndEmail
