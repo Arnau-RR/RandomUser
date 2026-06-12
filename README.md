@@ -129,7 +129,12 @@ Unit tests are organised by responsibility in four separate files:
 Run all tests in Xcode via **Product → Test** or `⌘ U`.
 
 ---
-
+<p align="center">
 Made with ❤️ for Adevinta's iOS Engineer Take-Home Challenge
+</p>
 
-[Report Bug](https://github.com/Arnau-RR/RandomUser/issues) · [Request Feature](https://github.com/Arnau-RR/RandomUser/issues)
+<p align="center">
+  <a href="https://github.com/Arnau-RR/RandomUser/issues">Report Bug</a>
+  ·
+  <a href="https://github.com/Arnau-RR/RandomUser/issues">Request Feature</a>
+</p>
